@@ -1,0 +1,189 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  EXPERT
+  ADMIN
+}
+
+enum AssignmentStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderStatus {
+  IN_PROGRESS
+  AWAITING_REVISION
+  COMPLETED
+  DISPUTED
+  CANCELLED
+}
+
+enum TransactionType {
+  CHARGE
+  PAYOUT
+  REFUND
+}
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED
+  REJECTED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          UserRole
+  country       String?
+  academicLevel String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  expertProfile   ExpertProfile?
+  assignments     Assignment[]   @relation("StudentAssignments")
+  ordersStudent   Order[]        @relation("StudentOrders")
+  ordersExpert    Order[]        @relation("ExpertOrders")
+  messages        Message[]
+  transactions    Transaction[]
+  reviewsGiven    Review[]       @relation("ReviewsByStudent")
+  reviewsReceived Review[]       @relation("ReviewsForExpert")
+  disputesOpened  Dispute[]      @relation("UserDisputes")
+  offersExpert    Offer[]        @relation("ExpertOffers")
+}
+
+model ExpertProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  bio             String?
+  degrees         String[]
+  subjects        String[]
+  languages       String[]
+  rating          Float    @default(0)
+  completedOrders Int      @default(0)
+  responseTimeMin Int?
+  isVerified      Boolean  @default(false)
+}
+
+model Assignment {
+  id            String           @id @default(cuid())
+  student       User             @relation("StudentAssignments", fields: [studentId], references: [id])
+  studentId     String
+  title         String
+  description   String
+  subject       String
+  academicLevel String
+  deadline      DateTime
+  budgetMin     Float?
+  budgetMax     Float?
+  status        AssignmentStatus @default(OPEN)
+  createdAt     DateTime         @default(now())
+
+  offers Offer[]
+  order  Order?  @relation("AssignmentOrder")
+}
+
+model Offer {
+  id           String     @id @default(cuid())
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  assignmentId String
+  expert       User       @relation("ExpertOffers", fields: [expertId], references: [id])
+  expertId     String
+  price        Float
+  deliveryDays Int
+  message      String
+  status       String     @default("PENDING") // PENDING / ACCEPTED / REJECTED
+  createdAt    DateTime   @default(now())
+}
+
+model Order {
+  id String @id @default(cuid())
+
+  // 1-1 with Assignment
+  assignment   Assignment @relation("AssignmentOrder", fields: [assignmentId], references: [id])
+  assignmentId String     @unique
+
+  // 1-n with User (student / expert)
+  student   User   @relation("StudentOrders", fields: [studentId], references: [id])
+  studentId String
+  expert    User   @relation("ExpertOrders", fields: [expertId], references: [id])
+  expertId  String
+
+  agreedPrice Float
+  status      OrderStatus @default(IN_PROGRESS)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  messages Message[]
+  review   Review?   @relation("OrderReview")
+  dispute  Dispute?  @relation("OrderDispute")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
+  sender    User     @relation(fields: [senderId], references: [id])
+  senderId  String
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id        String          @id @default(cuid())
+  user      User            @relation(fields: [userId], references: [id])
+  userId    String
+  type      TransactionType
+  amount    Float
+  currency  String
+  status    String          @default("PENDING")
+  createdAt DateTime        @default(now())
+}
+
+model Review {
+  id String @id @default(cuid())
+
+  // 1-1 with Order
+  order   Order  @relation("OrderReview", fields: [orderId], references: [id])
+  orderId String @unique
+
+  // many-to-1 with User (student, expert)
+  student   User   @relation("ReviewsByStudent", fields: [studentId], references: [id])
+  studentId String
+  expert    User   @relation("ReviewsForExpert", fields: [expertId], references: [id])
+  expertId  String
+
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+}
+
+model Dispute {
+  id String @id @default(cuid())
+
+  // 1-1 with Order
+  order   Order  @relation("OrderDispute", fields: [orderId], references: [id])
+  orderId String @unique
+
+  // many-to-1 with User
+  openedBy   User   @relation("UserDisputes", fields: [openedById], references: [id])
+  openedById String
+
+  reason     String
+  status     DisputeStatus @default(OPEN)
+  resolution String?
+  createdAt  DateTime      @default(now())
+}
