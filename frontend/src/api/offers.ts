@@ -1,5 +1,15 @@
 import { api } from "./client";
 
+// Preview of expert's recent completed assignments
+export interface ExpertRecentAssignmentPreview {
+  id: string;
+  assignmentId: string;
+  title: string;
+  subject: string;
+  completedAt: string;
+  solutionPdfPath: string | null; // first-page PDF preview
+}
+
 export interface Offer {
   id: string;
   assignmentId: string;
@@ -8,6 +18,7 @@ export interface Offer {
   message: string;
   status: string;
   createdAt: string;
+
   expert: {
     id: string;
     name: string;
@@ -16,6 +27,9 @@ export interface Offer {
       completedOrders: number;
     } | null;
   };
+
+  // NEW FIELD: last 10 completed assignments + PDF previews
+  expertRecentAssignments?: ExpertRecentAssignmentPreview[];
 }
 
 export const OffersAPI = {

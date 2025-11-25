@@ -2,6 +2,7 @@
 
 import { prisma } from "../config/prisma";
 import { AssignmentStatus } from "@prisma/client";
+import { getRecentCompletedOrdersForExpert } from "./order.service";
 
 export const createOffer = async (data: {
   assignmentId: string;
@@ -69,4 +70,40 @@ export const acceptOffer = async (offerId: string, studentId: string) => {
   });
 
   return order;
+};
+
+
+
+export const listOffersForAssignmentWithExpertHistory = async (
+  assignmentId: string
+) => {
+  const offers = await prisma.offer.findMany({
+    where: { assignmentId },
+    include: {
+      expert: {
+        include: {
+          expertProfile: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const expertIds = Array.from(new Set(offers.map((o) => o.expertId)));
+
+  const historyByExpert: Record<string, any[]> = {};
+
+  for (const expertId of expertIds) {
+    historyByExpert[expertId] = await getRecentCompletedOrdersForExpert(
+      expertId,
+      10
+    );
+  }
+
+  return offers.map((offer) => ({
+    ...offer,
+    expertRecentAssignments: historyByExpert[offer.expertId] ?? [],
+  }));
 };

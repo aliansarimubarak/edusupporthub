@@ -11,7 +11,7 @@ const PublicLayout = () => {
 
           <nav className="flex gap-4 text-sm">
             <a href="/" className="hover:text-blue-600">Home</a>
-            <a href="/subjects" className="hover:text-blue-600">Subjects</a>
+            <a href="/FacultyPage" className="hover:text-blue-600">FacultyPage</a>
             <a href="/about" className="hover:text-blue-600">About</a>
             <a href="/support" className="hover:text-blue-600">Support</a>
             <a href="/login" className="hover:text-blue-600">Login</a>

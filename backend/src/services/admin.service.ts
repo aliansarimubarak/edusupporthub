@@ -1,6 +1,7 @@
 ﻿// admin service placeholder
 
 import { prisma } from "../config/prisma";
+import { ExpertVerificationStatus } from "@prisma/client";
 
 export const getAdminStats = async () => {
   const [userCount, orderCount, txAgg, ratingAgg] = await Promise.all([
@@ -33,5 +34,44 @@ export const adminListOrders = async () => {
   return prisma.order.findMany({
     include: { assignment: true, student: true, expert: true },
     orderBy: { createdAt: "desc" },
+  });
+};
+
+
+export const adminListExpertsForVerification = async () => {
+  return prisma.expertProfile.findMany({
+    include: {
+      user: true,
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+};
+
+
+interface UpdateVerificationInput {
+  userId: string;
+  status: ExpertVerificationStatus;
+  adminNote?: string;
+}
+
+
+
+export const adminUpdateExpertVerification = async (
+  input: UpdateVerificationInput
+) => {
+  const isVerified = input.status === ExpertVerificationStatus.VERIFIED;
+
+  return prisma.expertProfile.update({
+    where: { userId: input.userId },
+    data: {
+      verificationStatus: input.status,
+      verificationAdminNote: input.adminNote,
+      isVerified,
+    },
+    include: {
+      user: true,
+    },
   });
 };

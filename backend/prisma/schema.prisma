@@ -23,6 +23,7 @@ enum AssignmentStatus {
 enum OrderStatus {
   IN_PROGRESS
   AWAITING_REVISION
+  PROCESSING
   COMPLETED
   DISPUTED
   CANCELLED
@@ -39,6 +40,21 @@ enum DisputeStatus {
   RESOLVED
   REJECTED
 }
+
+enum PayoutRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum ExpertVerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 
 model User {
   id            String   @id @default(cuid())
@@ -62,6 +78,8 @@ model User {
   reviewsReceived Review[]       @relation("ReviewsForExpert")
   disputesOpened  Dispute[]      @relation("UserDisputes")
   offersExpert    Offer[]        @relation("ExpertOffers")
+  payoutRequests      PayoutRequest[]          @relation("ExpertPayoutRequests")
+  deliverablesUploaded Deliverable[] @relation("UserDeliverables")
 }
 
 model ExpertProfile {
@@ -76,25 +94,38 @@ model ExpertProfile {
   completedOrders Int      @default(0)
   responseTimeMin Int?
   isVerified      Boolean  @default(false)
+  verificationStatus         ExpertVerificationStatus @default(UNVERIFIED)
+  verificationRequestMessage String?
+  verificationAdminNote      String?
+
+  createdAt       DateTime                 @default(now()) 
+  updatedAt       DateTime                 @default(now())
+
 }
 
 model Assignment {
   id            String           @id @default(cuid())
   student       User             @relation("StudentAssignments", fields: [studentId], references: [id])
   studentId     String
+
   title         String
+  faculty       String           // ⬅ NEW: store selected faculty
   description   String
   subject       String
   academicLevel String
   deadline      DateTime
   budgetMin     Float?
   budgetMax     Float?
+
+  attachmentPath String?         // ⬅ NEW: relative URL/path to the uploaded PDF
+
   status        AssignmentStatus @default(OPEN)
   createdAt     DateTime         @default(now())
 
   offers Offer[]
   order  Order?  @relation("AssignmentOrder")
 }
+
 
 model Offer {
   id           String     @id @default(cuid())
@@ -130,6 +161,8 @@ model Order {
   messages Message[]
   review   Review?   @relation("OrderReview")
   dispute  Dispute?  @relation("OrderDispute")
+
+  deliverables Deliverable[] @relation("OrderDeliverables")
 }
 
 model Message {
@@ -186,4 +219,44 @@ model Dispute {
   status     DisputeStatus @default(OPEN)
   resolution String?
   createdAt  DateTime      @default(now())
+}
+
+
+
+model Deliverable {
+  id            String   @id @default(cuid())
+
+  order         Order    @relation("OrderDeliverables", fields: [orderId], references: [id])
+  orderId       String
+
+  uploader      User     @relation("UserDeliverables", fields: [uploaderId], references: [id])
+  uploaderId    String
+
+  // DRAFT / FINAL
+  type          String   @default("FINAL")
+  filePath      String
+  originalName  String
+  mimeType      String
+  size          Int
+  isVerified    Boolean  @default(false)
+  verifiedBy    String?
+  verifiedAt    DateTime?
+  createdAt     DateTime @default(now())
+}
+
+
+model PayoutRequest {
+  id        String              @id @default(cuid())
+  expert    User                @relation("ExpertPayoutRequests", fields: [expertId], references: [id])
+  expertId  String
+
+  amount         Float
+  currency       String              @default("USD")
+  method         String              // Bank, eSewa, Khalti, etc.
+  accountDetails String              // Collateral: full payout details
+  note           String?
+  status         PayoutRequestStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -11,6 +11,8 @@ const AdminLayout = () => {
     { to: "/admin/disputes", label: "Disputes" },
     { to: "/admin/analytics", label: "Analytics" },
     { to: "/admin/content", label: "Content" },
+    { to: "/admin/payout-requests", label: "Payout Requests" },
+    { to: "/admin/expert-verification", label: "Expert Verification" },
   ];
 
   return (

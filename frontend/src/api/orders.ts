@@ -13,6 +13,46 @@ export interface Order {
   expert: { id: string; name: string };
 }
 
+export interface Deliverable {
+  id: string;
+  type: string;
+  filePath: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  isVerified: boolean;
+  verifiedBy?: string | null;
+  verifiedAt?: string | null;
+  createdAt: string;
+}
+
+export interface AdminOrderDetail {
+  id: string;
+  status: string;
+  agreedPrice: number;
+  createdAt: string;
+  updatedAt: string;
+  assignment: {
+    id: string;
+    title: string;
+    subject: string;
+    academicLevel: string;
+    deadline: string;
+  };
+  student: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  expert: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  deliverables: Deliverable[];
+}
+
+
 export const OrdersAPI = {
   async listMine() {
     const res = await api.get<Order[]>("/orders/mine");
@@ -26,6 +66,11 @@ export const OrdersAPI = {
 
   async complete(id: string) {
     const res = await api.post<Order>(`/orders/${id}/complete`);
+    return res.data;
+  },
+
+  async getAdminOrder(id: string) {
+    const res = await api.get<AdminOrderDetail>(`/admin/orders/${id}`);
     return res.data;
   },
 };

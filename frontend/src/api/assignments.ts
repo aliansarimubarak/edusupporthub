@@ -1,28 +1,31 @@
+
 import { api } from "./client";
 
-export interface Assignment {
+export interface  Assignment {
   id: string;
   title: string;
   description: string;
+  faculty?: string;
   subject: string;
   academicLevel: string;
   deadline: string;
   status: string;
   budgetMin?: number | null;
   budgetMax?: number | null;
+  attachmentPath?: string | null;
 }
 
 export const AssignmentsAPI = {
-  async create(payload: {
-    title: string;
-    description: string;
-    subject: string;
-    academicLevel: string;
-    deadline: string;
-    budgetMin?: number;
-    budgetMax?: number;
-  }) {
-    const res = await api.post<Assignment>("/assignments", payload);
+  /** 
+   * Create assignment (with file upload)
+   * Accepts FormData instead of JSON
+   */
+  async create(formData: FormData) {
+    const res = await api.post<Assignment>("/assignments", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return res.data;
   },
 
@@ -40,4 +43,11 @@ export const AssignmentsAPI = {
     const res = await api.get<Assignment>(`/assignments/${id}`);
     return res.data;
   },
+
+  // Use to update the assignment in case any problem occure
+  async update(id: string, payload: any) {
+    const res = await api.put(`/assignments/${id}`, payload);
+    return res.data;
+  },
 };
+

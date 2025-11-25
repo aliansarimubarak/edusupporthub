@@ -2,17 +2,44 @@ import { api } from "./client";
 
 export type UserRole = "STUDENT" | "EXPERT" | "ADMIN";
 
+export type ExpertVerificationStatus =
+  | "UNVERIFIED"
+  | "PENDING"
+  | "VERIFIED"
+  | "REJECTED";
+
 export interface User {
+  // id: string;
+  // name: string;
+  // email: string;
+  // role: UserRole;
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  expertProfile?: ExpertProfile | null;
 }
 
 interface AuthResponse {
   user: User;
   token: string;
 }
+
+export interface ExpertProfile {
+  id: string;
+  bio?: string | null;
+  degrees: string[];
+  subjects: string[];
+  languages: string[];
+  rating: number;
+  completedOrders: number;
+  responseTimeMin?: number | null;
+  isVerified: boolean;
+  verificationStatus: ExpertVerificationStatus;
+  verificationRequestMessage?: string | null;
+  verificationAdminNote?: string | null;
+}
+
 
 export const AuthAPI = {
   async register(data: {

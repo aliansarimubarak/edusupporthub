@@ -11,8 +11,8 @@ import AboutPage from "./pages/public/AboutPage";
 import FAQPage from "./pages/public/FAQPage";
 import ContactPage from "./pages/public/ContactPage";
 import ExpertApplicationPage from "./pages/public/ExpertApplicationPage";
-import SubjectDetailPage from "./pages/public/SubjectDetailPage";
-import SubjectsPage from "./pages/public/SubjectsPage";
+import FacultyDetailPage from "./pages/public/FacultyDetailPage";
+import FacultyPage from "./pages/public/FacultyPage";
 import SupportPage from "./pages/public/SupportPage";
 
 // (You can add Subjects, FAQ etc. later)
@@ -24,6 +24,9 @@ import MyOrdersPage from "./pages/student/MyOrdersPage";
 import MessagesPage from "./pages/student/MessagesPage";
 import PaymentsPage from "./pages/student/PaymentsPage";
 import ProfilePage from "./pages/student/ProfilePage";
+import AssignmentOffersPage from "./pages/student/AssignmentOffersPage";
+import StudentOrderDetailPage from "./pages/student/StudentOrderDetailPage";
+
 
 // Expert pages (stubs)
 import ExpertDashboardPage from "./pages/expert/ExpertDashboardPage";
@@ -41,6 +44,7 @@ import AnalyticsPage from "./pages/admin/AnalyticsPage";
 import ContentManagementPage from "./pages/admin/ContentManagementPage";
 import OrdersManagementPage from "./pages/admin/OrdersManagementPage";
 import DisputesPage from "./pages/admin/DisputesPage";
+import AdminExpertVerificationPage from "./pages/admin/AdminExpertVerificationPage";
 
 import { useAuth, getDashboardPathForRole } from "./context/AuthContext";
 import type { UserRole } from "./api/auth";
@@ -69,8 +73,8 @@ export const router = createBrowserRouter([
       { path: "/", element: <HomeOrRedirect /> },
 
       // ✅ PUBLIC PAGES (no login required)
-      { path: "/subjects", element: <SubjectsPage /> },
-      { path: "/subjects/:id", element: <SubjectDetailPage /> },
+      { path: "/FacultyPage", element: <FacultyPage /> },
+      { path: "/FacultyPage/:id", element: <FacultyDetailPage /> },
       { path: "/about", element: <AboutPage /> },
       { path: "/faq", element: <FAQPage /> },
       { path: "/support", element: <SupportPage /> },
@@ -94,10 +98,13 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <StudentDashboardPage /> },
       { path: "assignments/new", element: <CreateAssignmentPage /> },
+      { path: "assignments/:id/offers", element: <AssignmentOffersPage /> },
       { path: "orders", element: <MyOrdersPage /> },
+      { path: "orders/:id", element: <StudentOrderDetailPage /> },
       { path: "payments", element: <PaymentsPage /> },
       { path: "messages", element: <MessagesPage /> },
       { path: "profile", element: <ProfilePage /> },
+      { path: "orders/:id", element: <StudentOrderDetailPage /> },
     ],
   },
 
@@ -139,6 +146,10 @@ export const router = createBrowserRouter([
       { path: "orders", element: <OrdersManagementPage /> },
       { path: "disputes", element: <DisputesPage /> },
       { path: "users", element: <UsersManagementPage /> },
+      {
+        path: "expert-verification",
+        element: <AdminExpertVerificationPage />,
+      },
       
     ],
   },

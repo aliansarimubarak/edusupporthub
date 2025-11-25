@@ -5,7 +5,9 @@ import {
   listOrdersForExpert,
   getOrderById,
   completeOrder,
+  getOrderWithDeliverablesForAdmin
 } from "../services/order.service";
+import { UserRole } from "@prisma/client";
 
 export const listOrdersForCurrentHandler = async (
   req: AuthRequest,
@@ -25,7 +27,7 @@ export const listOrdersForCurrentHandler = async (
       return res.json(orders);
     }
 
-    return res.status(403).json({ error: "Admins have separate endpoints" });
+    return res.status(403).json({ error: "Only students and experts can list their own orders" });
   } catch (err) {
     next(err);
   }
@@ -37,11 +39,24 @@ export const getOrderHandler = async (
   next: NextFunction
 ) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
     const { id } = req.params;
-    const order = await getOrderById(id);
+    const order = await getOrderById(
+      id,
+      req.user.id,
+      req.user.role as UserRole
+    );
+
     if (!order) return res.status(404).json({ error: "Order not found" });
+
     res.json(order);
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
     next(err);
   }
 };
@@ -59,7 +74,38 @@ export const completeOrderHandler = async (
     const { id } = req.params;
     const order = await completeOrder(id, req.user.id);
     res.json(order);
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
     next(err);
   }
 };
+
+
+export const adminGetOrderHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user || req.user.role !== "ADMIN") {
+      return res.status(403).json({ error: "Only admin can view this resource" });
+    }
+
+    const { id } = req.params;
+
+    const order = await getOrderWithDeliverablesForAdmin(id);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    return res.json(order);
+  } catch (err: any) {
+    if (err?.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    next(err);
+  }
+};
+
