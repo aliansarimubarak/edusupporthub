@@ -69,7 +69,14 @@ const LoginPage = () => {
               className="w-full rounded border border-slate-300 px-2 py-1 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
-
+          <div className="flex justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-[11px] text-indigo-600 hover:underline"
+            >
+              Forgot your password?
+            </Link>
+          </div>
           <button
             type="submit"
             disabled={loading}

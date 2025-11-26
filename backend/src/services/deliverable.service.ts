@@ -135,7 +135,7 @@ export const verifyDeliverable = async (
   await prisma.order.update({
     where: { id: updated.orderId },
     data: {
-      status: OrderStatus.COMPLETED,
+      status: OrderStatus.PROCESSING,
     },
   });
 

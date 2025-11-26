@@ -1,4 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
+import logo from "../../assets/edusuppothub-06.png";
 import { useAuth } from "../../context/AuthContext";
 
 const AdminLayout = () => {
@@ -20,10 +21,20 @@ const AdminLayout = () => {
       <header className="border-b bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
           <div className="flex items-center gap-3">
-            <div className="text-lg font-bold text-indigo-600">
+            {/* <div className="text-lg font-bold text-indigo-600">
               Edu<span className="text-slate-900">SupportHub</span>
-            </div>
-            <span className="hidden text-xs text-slate-500 sm:inline">
+            </div> */}
+            <a href="/" className="flex items-center gap-2">
+              <img
+                src={logo}
+                alt="EduSupportHub logo"
+                className="h-12 w-auto"
+              />
+              {/* <span className="text-xl font-bold text-blue-600">
+                EduSupportHub
+              </span> */}
+            </a>
+            <span className="hidden text-xs font-bold text-slate-500 sm:inline">
               Admin Panel
             </span>
           </div>

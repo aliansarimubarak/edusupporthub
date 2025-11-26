@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import logo from "../../assets/edusuppothub-06.png";
 
 const PublicLayout = () => {
   return (
@@ -7,7 +8,17 @@ const PublicLayout = () => {
       {/* HEADER */}
       <header className="w-full bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-blue-600">EduSupportHub</h1>
+          <a href="/" className="flex items-center gap-2">
+            <img
+              src={logo}
+              alt="EduSupportHub logo"
+              className="h-12 w-auto"
+            />
+            {/* <span className="text-xl font-bold text-blue-600">
+              EduSupportHub
+            </span> */}
+          </a>
+          {/* <h1 className="text-xl font-bold text-blue-600">EduSupportHub</h1> */}
 
           <nav className="flex gap-4 text-sm">
             <a href="/" className="hover:text-blue-600">Home</a>

@@ -4,6 +4,7 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import AdminLayout from "./components/layout/AdminLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
+// Public pages (stubs)
 import HomePage from "./pages/public/HomePage";
 import LoginPage from "./pages/public/LoginPage";
 import RegisterPage from "./pages/public/RegisterPage";
@@ -14,6 +15,9 @@ import ExpertApplicationPage from "./pages/public/ExpertApplicationPage";
 import FacultyDetailPage from "./pages/public/FacultyDetailPage";
 import FacultyPage from "./pages/public/FacultyPage";
 import SupportPage from "./pages/public/SupportPage";
+import ForgotPasswordPage from "./pages/public/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/public/ResetPasswordPage";
+
 
 // (You can add Subjects, FAQ etc. later)
 
@@ -84,6 +88,8 @@ export const router = createBrowserRouter([
       // Auth pages (also public, but will redirect if already logged in)
       { path: "/login", element: <AuthPageGuard mode="login" /> },
       { path: "/register", element: <AuthPageGuard mode="register" /> },
+      { path: "/forgot-password", element: <ForgotPasswordPage /> },
+      { path: "/reset-password", element: <ResetPasswordPage /> }
     ],
   },
 

@@ -61,4 +61,18 @@ export const AuthAPI = {
     const res = await api.get<{ user: User | null }>("/auth/me");
     return res.data;
   },
+
+    async requestPasswordReset(email: string) {
+    const res = await api.post("/auth/forgot-password", { email });
+    return res.data as { message: string };
+  },
+
+  async resetPassword(token: string, password: string) {
+    const res = await api.post("/auth/reset-password", {
+      token,
+      password,
+    });
+    return res.data as { message: string };
+  },
+
 };

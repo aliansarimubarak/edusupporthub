@@ -1,127 +1,10 @@
-﻿// // order service placeholder
-
-// import { prisma } from "../config/prisma";
-// import { OrderStatus } from "@prisma/client";
-
-// export const listOrdersForStudent = async (studentId: string) => {
-//   return prisma.order.findMany({
-//     where: { studentId },
-//     include: { assignment: true, expert: true },
-//     orderBy: { createdAt: "desc" },
-//   });
-// };
-
-// export const listOrdersForExpert = async (expertId: string) => {
-//   return prisma.order.findMany({
-//     where: { expertId },
-//     include: { assignment: true, student: true },
-//     orderBy: { createdAt: "desc" },
-//   });
-// };
-
-// export const getOrderById = async (id: string) => {
-//   return prisma.order.findUnique({
-//     where: { id },
-//     include: { assignment: true, student: true, expert: true },
-//   });
-// };
-
-// export const completeOrder = async (orderId: string, studentId: string) => {
-//   const order = await prisma.order.findUnique({ where: { id: orderId } });
-//   if (!order) throw { status: 404, message: "Order not found" };
-//   if (order.studentId !== studentId) throw { status: 403, message: "Not your order" };
-
-//   return prisma.order.update({
-//     where: { id: orderId },
-//     data: { status: OrderStatus.COMPLETED },
-//   });
-// };
-
-// export const getRecentCompletedOrdersForExpert = async (
-//   expertId: string,
-//   limit = 10
-// ) => {
-//   const orders = await prisma.order.findMany({
-//     where: {
-//       expertId,
-//       status: OrderStatus.COMPLETED,
-//       // must have at least one deliverable
-//       deliverables: {
-//         some: {},
-//       },
-//     },
-//     include: {
-//       assignment: true,
-//       deliverables: {
-//         orderBy: {
-//           createdAt: "asc", // first file = usually first page / first upload
-//         },
-//         take: 1, // just need one file to preview
-//       },
-//     },
-//     orderBy: {
-//       updatedAt: "desc", // latest completed first
-//     },
-//     take: limit,
-//   });
-
-//   return orders.map((o) => {
-//     const firstDeliverable = o.deliverables[0];
-
-//     return {
-//       id: o.id,
-//       assignmentId: o.assignmentId,
-//       title: o.assignment.title,
-//       subject: o.assignment.subject,
-//       completedAt: o.updatedAt,
-//       // adjust "filePath" → your actual column name
-//       solutionPdfPath: firstDeliverable?.filePath ?? null,
-//     };
-//   });
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { prisma } from "../config/prisma";
+﻿import { prisma } from "../config/prisma";
 import { OrderStatus, UserRole } from "@prisma/client";
 
+
 /**
- * List orders for a student.
- * Includes assignment, expert, and ONLY verified deliverables
- * so students only see files after admin verification.
+ * List orders belonging to the given student.
  */
-// export const listOrdersForStudent = async (studentId: string) => {
-//   return prisma.order.findMany({
-//     where: { studentId },
-//     include: {
-//       assignment: true,
-//       expert: true,
-//       deliverables: {
-//         where: { isVerified: true },
-//         orderBy: { createdAt: "desc" },
-//       },
-//     },
-//     orderBy: { createdAt: "desc" },
-//   });
-// };
-
-
-
 export const listOrdersForStudent = async (studentId: string) => {
   return prisma.order.findMany({
     where: { studentId },
@@ -131,26 +14,8 @@ export const listOrdersForStudent = async (studentId: string) => {
 };
 
 /**
- * List orders for an expert.
- * Includes assignment, student, and ALL deliverables
- * (expert can see their own uploads regardless of verification).
+ * List orders belonging to the given expert.
  */
-// export const listOrdersForExpert = async (expertId: string) => {
-//   return prisma.order.findMany({
-//     where: { expertId },
-//     include: {
-//       assignment: true,
-//       student: true,
-//       deliverables: {
-//         orderBy: { createdAt: "desc" },
-//       },
-//     },
-//     orderBy: { createdAt: "desc" },
-//   });
-// };
-
-
-
 export const listOrdersForExpert = async (expertId: string) => {
   return prisma.order.findMany({
     where: { expertId },
@@ -160,26 +25,8 @@ export const listOrdersForExpert = async (expertId: string) => {
 };
 
 /**
- * Generic getOrderById – safe for student / expert views.
- * Includes ONLY verified deliverables to match “student only sees verified files”.
- * If admin needs all deliverables, use getOrderWithDeliverablesForAdmin.
+ * Get a single order with related entities (used by students / experts).
  */
-// export const getOrderById = async (id: string) => {
-//   return prisma.order.findUnique({
-//     where: { id },
-//     include: {
-//       assignment: true,
-//       student: true,
-//       expert: true,
-//       deliverables: {
-//         where: { isVerified: true },
-//         orderBy: { createdAt: "desc" },
-//       },
-//     },
-//   });
-// };
-
-
 export const getOrderById = async (
   id: string,
   userId: string,
@@ -211,17 +58,94 @@ export const getOrderById = async (
  * NOTE: in the new flow, admin verification also sets COMPLETED,
  * but this function is kept for compatibility.
  */
-export const completeOrder = async (orderId: string, studentId: string) => {
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order) throw { status: 404, message: "Order not found" };
-  if (order.studentId !== studentId)
-    throw { status: 403, message: "Not your order" };
+// export const completeOrder = async (orderId: string, studentId: string,   rating: number, comment?: string) => {
+//   const order = await prisma.order.findUnique({ where: { id: orderId } });
+//   if (!order) throw { status: 404, message: "Order not found" };
+//   if (order.studentId !== studentId)
+//     throw { status: 403, message: "Not your order" };
 
-  return prisma.order.update({
+//   return prisma.order.update({
+//     where: { id: orderId },
+//     data: { status: OrderStatus.COMPLETED },
+//   });
+// };
+
+/**
+ * Student completes an order + leaves rating.
+ * Only the student on the order can do this.
+ * Only allowed after admin verification (status = PROCESSING).
+ */
+export const completeOrder = async (
+  orderId: string,
+  studentId: string,
+  rating?: number,
+  comment?: string
+) => {
+  const order = await prisma.order.findUnique({
     where: { id: orderId },
-    data: { status: OrderStatus.COMPLETED },
+  });
+
+  if (!order) {
+    throw { status: 404, message: "Order not found" };
+  }
+
+  if (order.studentId !== studentId) {
+    throw { status: 403, message: "Not your order" };
+  }
+
+  if (order.status === OrderStatus.COMPLETED) {
+    throw { status: 400, message: "Order is already completed" };
+  }
+
+  // Only allow completion after admin has verified the files
+  if (order.status !== OrderStatus.PROCESSING) {
+    throw {
+      status: 400,
+      message: "Order is not ready to be completed yet.",
+    };
+  }
+
+  const normalizedRating =
+    typeof rating === "number"
+      ? Math.min(5, Math.max(1, Math.round(rating)))
+      : undefined;
+
+  await prisma.$transaction(async (tx) => {
+    // 1) Mark order completed
+    await tx.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.COMPLETED },
+    });
+
+    // 2) Create review once (Order 1–1 Review)
+    if (normalizedRating !== undefined) {
+      const existing = await tx.review.findUnique({
+        where: { orderId },
+      });
+
+      if (!existing) {
+        await tx.review.create({
+          data: {
+            orderId,
+            studentId,
+            expertId: order.expertId,
+            rating: normalizedRating,
+            comment: comment ?? "",
+          },
+        });
+      }
+    }
+  });
+
+  // Return fully populated order
+  return prisma.order.findUnique({
+    where: { id: orderId },
+    include: { assignment: true, student: true, expert: true },
   });
 };
+
+
+
 
 /**
  * Used on the offers page to show an expert's recent completed work.
@@ -286,5 +210,69 @@ export const getOrderWithDeliverablesForAdmin = async (orderId: string) => {
         orderBy: { createdAt: "desc" },
       },
     },
+  });
+};
+
+
+/**
+ * Admin returns an order to the expert for further enhancement.
+ * - All deliverables become unverified (student can't download).
+ * - Order status -> AWAITING_REVISION.
+ * - Optional admin "reason" is stored as a message to the expert.
+ */
+export const returnOrderForRevision = async (
+  orderId: string,
+  adminId?: string,
+  reason?: string
+) => {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+  });
+
+  if (!order) {
+    throw { status: 404, message: "Order not found" };
+  }
+
+  if (order.status === OrderStatus.COMPLETED) {
+    throw {
+      status: 400,
+      message: "Completed orders cannot be returned for revision.",
+    };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // 1) Remove verification, so student won't see outdated files
+    await tx.deliverable.updateMany({
+      where: { orderId },
+      data: {
+        isVerified: false,
+        verifiedBy: null,
+        verifiedAt: null,
+      },
+    });
+
+    // 2) Optional message to expert
+    if (adminId && reason) {
+      await tx.message.create({
+        data: {
+          orderId,
+          senderId: adminId,
+          text: `Admin returned this order for revision: ${reason}`,
+        },
+      });
+    }
+
+    // 3) Mark order as awaiting revision
+    await tx.order.update({
+      where: { id: orderId },
+      data: {
+        status: OrderStatus.AWAITING_REVISION,
+      },
+    });
+  });
+
+  return prisma.order.findUnique({
+    where: { id: orderId },
+    include: { assignment: true, student: true, expert: true },
   });
 };

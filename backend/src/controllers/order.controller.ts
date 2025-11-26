@@ -61,6 +61,29 @@ export const getOrderHandler = async (
   }
 };
 
+
+
+// export const completeOrderHandler = async (
+//   req: AuthRequest,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     if (!req.user || req.user.role !== "STUDENT") {
+//       return res.status(403).json({ error: "Only students can complete orders" });
+//     }
+
+//     const { id } = req.params;
+//     const order = await completeOrder(id, req.user.id);
+//     res.json(order);
+//   } catch (err: any) {
+//     if (err?.status) {
+//       return res.status(err.status).json({ error: err.message });
+//     }
+//     next(err);
+//   }
+// };
+
 export const completeOrderHandler = async (
   req: AuthRequest,
   res: Response,
@@ -68,11 +91,18 @@ export const completeOrderHandler = async (
 ) => {
   try {
     if (!req.user || req.user.role !== "STUDENT") {
-      return res.status(403).json({ error: "Only students can complete orders" });
+      return res
+        .status(403)
+        .json({ error: "Only students can complete orders" });
     }
 
     const { id } = req.params;
-    const order = await completeOrder(id, req.user.id);
+    const { rating, comment } = req.body as {
+      rating?: number;
+      comment?: string;
+    };
+
+    const order = await completeOrder(id, req.user.id, rating, comment);
     res.json(order);
   } catch (err: any) {
     if (err?.status) {

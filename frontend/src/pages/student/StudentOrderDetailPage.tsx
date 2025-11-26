@@ -19,6 +19,10 @@ const StudentOrderDetailPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [completing, setCompleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rating, setRating] = useState<number>(5);
+  const [reviewComment, setReviewComment] = useState("");
+
+
 
   useEffect(() => {
     if (!id) {
@@ -63,15 +67,44 @@ const StudentOrderDetailPage = () => {
     }
   };
 
+  // const handleMarkCompleted = async () => {
+  //   if (!id) return;
+  //   if (!confirm("Mark this order as completed?")) return;
+
+  //   setCompleting(true);
+  //   try {
+  //     const updated = await OrdersAPI.complete(id);
+  //     setOrder(updated);
+  //     alert("Order marked as completed.");
+  //   } catch (err: any) {
+  //     alert(err?.response?.data?.error || "Failed to complete order");
+  //   } finally {
+  //     setCompleting(false);
+  //   }
+  // };
   const handleMarkCompleted = async () => {
     if (!id) return;
-    if (!confirm("Mark this order as completed?")) return;
+
+    if (!rating || rating < 1 || rating > 5) {
+      alert("Please select a rating between 1 and 5.");
+      return;
+    }
+
+    if (
+      !confirm(
+        "Mark this order as completed? You won't be able to request further changes for this order afterwards."
+      )
+    ) {
+      return;
+    }
 
     setCompleting(true);
     try {
-      const updated = await OrdersAPI.complete(id);
+      const updated = await OrdersAPI.complete(id, rating, reviewComment);
       setOrder(updated);
-      alert("Order marked as completed.");
+      alert(
+        "Thank you! Your rating has been submitted and the order is now completed."
+      );
     } catch (err: any) {
       alert(err?.response?.data?.error || "Failed to complete order");
     } finally {
@@ -139,7 +172,7 @@ const StudentOrderDetailPage = () => {
           <h2 className="mb-2 text-sm font-semibold text-slate-900">
             Final files
           </h2>
-          {deliverables.length === 0 ? (
+          {/* {deliverables.length === 0 ? (
             <p className="text-xs text-slate-500">
               No deliverables uploaded yet.
             </p>
@@ -182,6 +215,57 @@ const StudentOrderDetailPage = () => {
               ))}
             </ul>
           )}
+
+          <button
+            onClick={handleMarkCompleted}
+            disabled={isCompleted || completing}
+            className="mt-3 rounded-md bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+          >
+            {isCompleted
+              ? "Order already completed"
+              : completing
+              ? "Completing..."
+              : "Mark as completed"}
+          </button> */}
+          {deliverables.length === 0 ? (
+            <p className="text-xs text-slate-500">
+              No deliverables uploaded yet.
+            </p>
+          ) : (
+            <ul className="space-y-2 text-xs">
+              {/* existing list of files */}
+            </ul>
+          )}
+
+          <div className="mt-3 space-y-2">
+            <label className="block text-[11px] font-medium text-slate-700">
+              Rate the quality (1–5)
+              <select
+                value={rating}
+                onChange={(e) => setRating(Number(e.target.value))}
+                disabled={isCompleted || completing}
+                className="mt-1 w-full rounded border border-slate-200 px-2 py-1 text-xs"
+              >
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-[11px] font-medium text-slate-700">
+              Feedback for the expert (optional)
+              <textarea
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                disabled={isCompleted || completing}
+                rows={3}
+                className="mt-1 w-full rounded border border-slate-200 px-2 py-1 text-xs"
+                placeholder="Share what went well or what could be improved"
+              />
+            </label>
+          </div>
 
           <button
             onClick={handleMarkCompleted}

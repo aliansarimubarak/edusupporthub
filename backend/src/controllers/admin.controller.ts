@@ -13,6 +13,9 @@ import {
   adminUpdatePayoutRequestStatus,
 } from "../services/wallet.service";
 import { PayoutRequestStatus, ExpertVerificationStatus } from "@prisma/client";
+import { AuthRequest } from "../middlewares/authMiddleware";
+import { returnOrderForRevision } from "../services/order.service";
+
 
 export const getStatsHandler = async (
   _req: Request,
@@ -90,7 +93,6 @@ export const updatePayoutRequestStatusHandler = async (
 
 
 
-
 export const listExpertVerificationHandler = async (
   _req: Request,
   res: Response,
@@ -128,6 +130,35 @@ export const updateExpertVerificationHandler = async (
 
     res.json(updated);
   } catch (err) {
+    next(err);
+  }
+};
+
+
+export const adminReturnOrderForRevisionHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const { id } = req.params;
+    const { reason } = req.body as { reason?: string };
+
+    const updated = await returnOrderForRevision(id, req.user.id, reason);
+
+    if (!updated) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.json(updated);
+  } catch (err: any) {
+    if (err?.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
     next(err);
   }
 };

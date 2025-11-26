@@ -79,6 +79,13 @@ export const AdminAPI = {
     return res.data;
   },
 
+  async returnOrderForRevision(orderId: string, reason?: string) {
+    const res = await api.patch<Order>(
+      `/admin/orders/${orderId}/return-for-revision`,
+      { reason }
+    );
+    return res.data;
+  },
 
   async expertVerificationList() {
     const res = await api.get<AdminExpertProfileForVerification[]>(

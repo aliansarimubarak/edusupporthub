@@ -1,5 +1,5 @@
 ﻿import { Request, Response, NextFunction } from "express";
-import { registerUser, loginUser, getCurrentUser } from "../services/auth.service";
+import { registerUser, loginUser, getCurrentUser, requestPasswordReset, resetPasswordWithToken, } from "../services/auth.service";
 import { AuthRequest } from "../middlewares/authMiddleware";
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -50,3 +50,58 @@ export const me = async (req: AuthRequest, res: Response, next: NextFunction) =>
     next(err);
   }
 };
+
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    await requestPasswordReset(email);
+
+    // Always return success (even if email doesn't exist)
+    res.json({
+      message:
+        "If an account with that email exists, a password reset link has been sent.",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res
+        .status(400)
+        .json({ error: "Token and new password are required" });
+    }
+
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ error: "Password must be at least 6 characters long" });
+    }
+
+    await resetPasswordWithToken(token, password);
+
+    res.json({ message: "Password has been reset successfully." });
+  } catch (err: any) {
+    if (err?.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    next(err);
+  }
+};
+

@@ -64,8 +64,16 @@ export const OrdersAPI = {
     return res.data;
   },
 
-  async complete(id: string) {
-    const res = await api.post<Order>(`/orders/${id}/complete`);
+  // async complete(id: string) {
+  //   const res = await api.post<Order>(`/orders/${id}/complete`);
+  //   return res.data;
+  // },
+
+  async complete(id: string, rating: number, comment?: string) {
+    const res = await api.post<Order>(`/orders/${id}/complete`, {
+      rating,
+      comment,
+    });
     return res.data;
   },
 

@@ -2,6 +2,8 @@
 import { hashPassword, comparePassword } from "../utils/hash";
 import { signToken } from "../utils/jwt";
 import { UserRole } from "@prisma/client";
+import crypto from "crypto";
+import { sendPasswordResetEmail } from "../utils/email";
 
 export const registerUser = async (params: {
   name: string;
@@ -73,3 +75,74 @@ export const getCurrentUser = async (userId: string) => {
     include: { expertProfile: true },
   });
 };
+
+export const requestPasswordReset = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    // Don't reveal if email exists – respond as if it worked
+    return;
+  }
+
+  // Invalidate any previous unused tokens (optional safety)
+  await prisma.passwordResetToken.updateMany({
+    where: {
+      userId: user.id,
+      usedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+    data: {
+      expiresAt: new Date(), // expire immediately
+    },
+  });
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
+
+  await prisma.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      token,
+      expiresAt,
+    },
+  });
+
+  const frontendUrl =
+    process.env.FRONTEND_URL || "http://localhost:5173";
+
+  const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+
+  await sendPasswordResetEmail(user.email, resetLink);
+};
+
+export const resetPasswordWithToken = async (
+  token: string,
+  newPassword: string
+) => {
+  const record = await prisma.passwordResetToken.findUnique({
+    where: { token },
+    include: { user: true },
+  });
+
+  if (
+    !record ||
+    record.usedAt ||
+    record.expiresAt < new Date()
+  ) {
+    throw { status: 400, message: "Invalid or expired reset token" };
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: record.userId },
+      data: { passwordHash },
+    });
+
+    await tx.passwordResetToken.update({
+      where: { id: record.id },
+      data: { usedAt: new Date() },
+    });
+  });
+};
+
